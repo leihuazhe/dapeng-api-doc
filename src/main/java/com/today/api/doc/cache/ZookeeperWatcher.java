@@ -20,6 +20,11 @@ public class ZookeeperWatcher {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ZookeeperWatcher.class);
     private final static Map<String, List<ServiceInfo>> caches = new ConcurrentHashMap<>();
+    private String zookeeperHost;
+
+    public ZookeeperWatcher(String zookeeperHost) {
+        this.zookeeperHost = zookeeperHost;
+    }
 
     private ZooKeeper zk;
 
@@ -115,13 +120,13 @@ public class ZookeeperWatcher {
     private void connect() {
         try {
 
-            zk = new ZooKeeper(SoaSystemEnvProperties.SOA_ZOOKEEPER_HOST, 15000, e -> {
+            zk = new ZooKeeper(zookeeperHost, 15000, e -> {
                 if (e.getState() == Watcher.Event.KeeperState.Expired) {
                     LOGGER.info("zookeeper Watcher 到zookeeper Server的session过期，重连");
                     destroy();
                     init();
                 } else if (e.getState() == Watcher.Event.KeeperState.SyncConnected) {
-                    LOGGER.info("Zookeeper Watcher 已连接 zookeeper Server");
+                    LOGGER.info("Zookeeper Watcher 已连接 zookeeper Server,Zookeeper host: {}",zookeeperHost);
                 }
             });
         } catch (Exception e) {

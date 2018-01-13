@@ -1,5 +1,7 @@
 package com.today.api.doc.cache;
 
+import com.today.api.doc.properties.ApiDocProperties;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -15,10 +17,13 @@ public class ServiceInfoInitializer {
 
     private ZookeeperWatcher zookeeperWatcher;
 
+    @Autowired
+    private ApiDocProperties apiDocProperties;
+
 
     @PostConstruct
     public void init() {
-        zookeeperWatcher = new ZookeeperWatcher();
+        zookeeperWatcher = new ZookeeperWatcher(apiDocProperties.getZookeeperHost());
         zookeeperWatcher.init();
     }
 
