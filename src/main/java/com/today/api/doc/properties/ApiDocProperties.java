@@ -7,6 +7,7 @@ public class ApiDocProperties {
 
     private String zookeeperHost = ApiDocConstants.SOA_ZOOKEEPER_HOST;
 
+    private String parentPath = ApiDocConstants.PARENT_PATH;
 
     public String getZookeeperHost() {
         return zookeeperHost;

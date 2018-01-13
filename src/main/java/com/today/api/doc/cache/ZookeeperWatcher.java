@@ -2,7 +2,6 @@ package com.today.api.doc.cache;
 
 import com.github.dapeng.registry.ServiceInfo;
 import com.github.dapeng.registry.zookeeper.WatcherUtils;
-import com.github.dapeng.util.SoaSystemEnvProperties;
 import org.apache.zookeeper.KeeperException;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
@@ -127,6 +126,8 @@ public class ZookeeperWatcher {
                     init();
                 } else if (e.getState() == Watcher.Event.KeeperState.SyncConnected) {
                     LOGGER.info("Zookeeper Watcher 已连接 zookeeper Server,Zookeeper host: {}",zookeeperHost);
+                }else if (e.getState() == Watcher.Event.KeeperState.Disconnected) {
+                    LOGGER.info("Zookeeper Watcher 连接不上了");
                 }
             });
         } catch (Exception e) {
