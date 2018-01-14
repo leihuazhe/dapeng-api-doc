@@ -71,6 +71,7 @@ public class ServiceCache {
                         String fullNameKey = getFullNameKey(s);
 
                         services.put(serviceKey, s);
+                        LOGGER.info("----------------- service size :  "+services.size());
                         fullNameService.put(fullNameKey, s);
                         loadServiceUrl(s);
 
