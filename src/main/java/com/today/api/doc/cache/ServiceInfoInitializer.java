@@ -1,5 +1,6 @@
 package com.today.api.doc.cache;
 
+import com.today.api.doc.cache.curator.CuratorWatcher;
 import com.today.api.doc.properties.ApiDocProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -15,7 +16,9 @@ import javax.annotation.PreDestroy;
 @Component
 public class ServiceInfoInitializer {
 
-    private ZookeeperWatcher zookeeperWatcher;
+//    private ZookeeperWatcher zookeeperWatcher;
+
+    private CuratorWatcher curatorWatcher;
 
     @Autowired
     private ApiDocProperties apiDocProperties;
@@ -23,12 +26,15 @@ public class ServiceInfoInitializer {
 
     @PostConstruct
     public void init() {
-        zookeeperWatcher = new ZookeeperWatcher(apiDocProperties.getZookeeperHost());
-        zookeeperWatcher.init();
+//        zookeeperWatcher = new ZookeeperWatcher(apiDocProperties.getZookeeperHost());
+//        zookeeperWatcher.init();
+
+        curatorWatcher = new CuratorWatcher(apiDocProperties.getZookeeperHost(),5000);
+        curatorWatcher.init();
     }
 
-    @PreDestroy
+    /*@PreDestroy
     public void destory() {
         zookeeperWatcher.destroy();
-    }
+    }*/
 }

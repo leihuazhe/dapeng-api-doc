@@ -48,6 +48,12 @@ public class CuratorWatcher {
         this.sessionTimeOut = sessionTimeOut;
     }
 
+
+    public CuratorWatcher(String zookeeperHost, Integer sessionTimeOut) {
+        this.zookeeperHost = zookeeperHost;
+        this.sessionTimeOut = sessionTimeOut;
+    }
+
     private CuratorFramework cf;
 
 
@@ -84,13 +90,21 @@ public class CuratorWatcher {
         });
         //3 建立连接
         cf.start();
+        try {
+            getServerList();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     public void getServerList() throws Exception {
         //4 建立一个PathChildrenCache缓存,第三个参数为是否接受节点数据内容 如果为false则不接受
         PathChildrenCache cache = new PathChildrenCache(cf, PARENT_PATH, true);
         //5 在初始化的时候就进行缓存监听
-        cache.start(PathChildrenCache.StartMode.POST_INITIALIZED_EVENT);
+
+//        cache.start(PathChildrenCache.StartMode.POST_INITIALIZED_EVENT);
+
+        cache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
         cache.getListenable().addListener(new PathChildrenCacheListener() {
             /**
              * <B>方法名称：</B>监听子节点变更<BR>
@@ -130,18 +144,18 @@ public class CuratorWatcher {
         try {
             PathChildrenCache cache = new PathChildrenCache(cf, servicePath, true);
             //5 在初始化的时候就进行缓存监听
-            cache.start(PathChildrenCache.StartMode.POST_INITIALIZED_EVENT);
+            cache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
             cache.getListenable().addListener((cf, event) -> {
                 switch (event.getType()) {
                     case CHILD_ADDED:
-                        System.out.println("CHILD_ADDED :" + event.getData().getPath());
+                        System.out.println("SERVICE_CHILD_ADDED :" + event.getData().getPath());
                         getServiceInfoByServiceName(serviceName);
                         break;
                     case CHILD_UPDATED:
-                        System.out.println("CHILD_UPDATED :" + event.getData().getPath());
+                        System.out.println("SERVICE_CHILD_UPDATED :" + event.getData().getPath());
                         break;
                     case CHILD_REMOVED:
-                        System.out.println("CHILD_REMOVED :" + event.getData().getPath());
+                        System.out.println("SERVICE_CHILD_REMOVED :" + event.getData().getPath());
                         getServiceInfoByServiceName(serviceName);
                         break;
                     default:
