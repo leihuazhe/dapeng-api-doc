@@ -1,25 +1,25 @@
 package com.today.api.doc.cache.curator;
 
 import com.github.dapeng.registry.ServiceInfo;
+import com.github.dapeng.registry.zookeeper.WatcherUtils;
+import com.today.api.doc.cache.ServiceCache;
 import com.today.api.doc.properties.ApiDocConstants;
-import org.apache.curator.RetryPolicy;
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
 import org.apache.curator.framework.recipes.cache.PathChildrenCache;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheEvent;
 import org.apache.curator.framework.recipes.cache.PathChildrenCacheListener;
 import org.apache.curator.framework.state.ConnectionState;
-import org.apache.curator.retry.ExponentialBackoffRetry;
-import org.apache.zookeeper.CreateMode;
+import org.apache.curator.retry.RetryNTimes;
+import org.apache.zookeeper.KeeperException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * CuratorWatcher
+ * CuratorWatcher 使用Curator api 实现
  *
  * @author maple
  * @date 2018/1/13 17:26
@@ -52,61 +52,41 @@ public class CuratorWatcher {
 
 
     public void init() {
-        //1 重试策略：初试时间为1s 重试10次
-        RetryPolicy retryPolicy = new ExponentialBackoffRetry(1000, 10);
-        //2 通过工厂创建连接
+        //1 通过工厂创建连接
         cf = CuratorFrameworkFactory.builder()
                 .connectString(zookeeperHost)
                 .sessionTimeoutMs(sessionTimeOut)
-                .retryPolicy(retryPolicy)
+                .retryPolicy(new RetryNTimes(1, 1000))
                 .build();
 
         cf.getConnectionStateListenable().addListener((client, state) -> {
-
             if (state == ConnectionState.LOST) {
+                //连接丢失
+                LOGGER.info("lost session with zookeeper");
                 while (true) {
-                    boolean flag = false;
+                    boolean flag;
                     try {
                         flag = cf.getZookeeperClient().blockUntilConnectedOrTimedOut();
                         if (flag) {
-                            //重新获取节点
-//                    clearListener();
-//                    createNode(nodePath, nodeData);
-//                    client.getConnectionStateListenable().addListener(getListener(nodePath, nodeData));
                             break;
                         }
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-
                 }
 
-
-//                CuratorWatcher.this.stateChanged(StateListener.DISCONNECTED);
-                //连接丢失
-                LOGGER.info("lost session with zookeeper");
             } else if (state == ConnectionState.CONNECTED) {
-//                CuratorWatcher.this.stateChanged(StateListener.CONNECTED);
                 //连接新建
                 LOGGER.info("connected with zookeeper");
             } else if (state == ConnectionState.RECONNECTED) {
-//                CuratorWatcher.this.stateChanged(StateListener.RECONNECTED);
                 LOGGER.info("reconnected with zookeeper");
             }
         });
-
-
         //3 建立连接
         cf.start();
-
-
     }
 
-    public void dos() throws Exception {
-        //4 创建跟节点
-        if (cf.checkExists().forPath(PARENT_PATH) == null) {
-            cf.create().withMode(CreateMode.PERSISTENT).forPath(PARENT_PATH, "super init".getBytes());
-        }
+    public void getServerList() throws Exception {
         //4 建立一个PathChildrenCache缓存,第三个参数为是否接受节点数据内容 如果为false则不接受
         PathChildrenCache cache = new PathChildrenCache(cf, PARENT_PATH, true);
         //5 在初始化的时候就进行缓存监听
@@ -122,20 +102,68 @@ public class CuratorWatcher {
                 switch (event.getType()) {
                     case CHILD_ADDED:
                         System.out.println("CHILD_ADDED :" + event.getData().getPath());
-                        System.out.println("CHILD_ADDED :" + new String(event.getData().getData()));
+                        getServerList();
                         break;
                     case CHILD_UPDATED:
                         System.out.println("CHILD_UPDATED :" + event.getData().getPath());
-                        System.out.println("CHILD_UPDATED :" + new String(event.getData().getData()));
+                        getServerList();
                         break;
                     case CHILD_REMOVED:
                         System.out.println("CHILD_REMOVED :" + event.getData().getPath());
-                        System.out.println("CHILD_REMOVED :" + new String(event.getData().getData()));
+                        getServerList();
                         break;
                     default:
                         break;
                 }
             }
         });
+
+        List<String> children = cf.getChildren().forPath(PARENT_PATH);
+
+        children.forEach(serviceName -> getServiceInfoByServiceName(serviceName));
+
+    }
+
+    public void getServiceInfoByServiceName(String serviceName) {
+
+        String servicePath = PARENT_PATH + "/" + serviceName;
+        try {
+            PathChildrenCache cache = new PathChildrenCache(cf, servicePath, true);
+            //5 在初始化的时候就进行缓存监听
+            cache.start(PathChildrenCache.StartMode.POST_INITIALIZED_EVENT);
+            cache.getListenable().addListener((cf, event) -> {
+                switch (event.getType()) {
+                    case CHILD_ADDED:
+                        System.out.println("CHILD_ADDED :" + event.getData().getPath());
+                        getServiceInfoByServiceName(serviceName);
+                        break;
+                    case CHILD_UPDATED:
+                        System.out.println("CHILD_UPDATED :" + event.getData().getPath());
+                        break;
+                    case CHILD_REMOVED:
+                        System.out.println("CHILD_REMOVED :" + event.getData().getPath());
+                        getServiceInfoByServiceName(serviceName);
+                        break;
+                    default:
+                        break;
+                }
+            });
+
+            List<String> children = cf.getChildren().forPath(servicePath);
+
+            LOGGER.info("获取{}的子节点成功", servicePath);
+            WatcherUtils.resetServiceInfoByName(serviceName, servicePath, children, caches);
+
+            ServiceCache.loadServicesMetadata(serviceName, caches.get(serviceName));
+
+        } catch (KeeperException e) {
+            LOGGER.error(e.getMessage(), e);
+        } catch (InterruptedException e) {
+            LOGGER.error(e.getMessage(), e);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
 }
