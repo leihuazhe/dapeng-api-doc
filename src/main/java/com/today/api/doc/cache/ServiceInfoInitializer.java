@@ -16,9 +16,9 @@ import javax.annotation.PreDestroy;
 @Component
 public class ServiceInfoInitializer {
 
-//    private ZookeeperWatcher zookeeperWatcher;
+    private ZookeeperWatcher zookeeperWatcher;
 
-    private CuratorWatcher curatorWatcher;
+//    private CuratorWatcher curatorWatcher;
 
     @Autowired
     private ApiDocProperties apiDocProperties;
@@ -26,11 +26,11 @@ public class ServiceInfoInitializer {
 
     @PostConstruct
     public void init() {
-//        zookeeperWatcher = new ZookeeperWatcher(apiDocProperties.getZookeeperHost());
-//        zookeeperWatcher.init();
+        zookeeperWatcher = new ZookeeperWatcher(apiDocProperties.getZookeeperHost());
+        zookeeperWatcher.init();
 
-        curatorWatcher = new CuratorWatcher(apiDocProperties.getZookeeperHost(),5000);
-        curatorWatcher.init();
+//        curatorWatcher = new CuratorWatcher(apiDocProperties.getZookeeperHost(),5000);
+//        curatorWatcher.init();
     }
 
     /*@PreDestroy

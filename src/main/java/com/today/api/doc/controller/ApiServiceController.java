@@ -122,7 +122,10 @@ public class ApiServiceController {
     @RequestMapping(value = "findService/{serviceName}/{version}", method = RequestMethod.GET)
     @ResponseBody
     public Service findService(@PathVariable String serviceName, @PathVariable String version) {
-        return ServiceCache.getService(serviceName, version);
+        System.out.println("serviceName: "+serviceName +",version: "+version);
+        Service service =  ServiceCache.getService(serviceName, version);
+        System.out.println(service);
+        return service;
     }
 
     @RequestMapping(value = "findServiceAfterRefresh/{serviceName}/{version}/{refresh}", method = RequestMethod.GET)

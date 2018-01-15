@@ -15,7 +15,7 @@ import javax.servlet.http.HttpServletRequest;
  * @date 2018-01-12 20:01
  */
 @Controller
-@RequestMapping("index")
+@RequestMapping("/")
 public class IndexController {
     @ModelAttribute
     public void populateModel(Model model) {

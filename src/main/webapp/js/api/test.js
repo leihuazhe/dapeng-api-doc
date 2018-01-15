@@ -379,8 +379,8 @@ function applyTest(serviceName, version, methodName) {
         parameter: stringParameter
     }, function (result) {
 
-        $("#json-result").html(getFormatedJsonHTML(eval('(' + result + ')')));
-
+        // $("#json-result").html(getFormatedJsonHTML(eval('(' + result + ')')));
+        $("#json-result").html(getFormatedJsonHTML(result));
     }, 'json');
 }
 

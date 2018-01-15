@@ -97,11 +97,18 @@ public class ZookeeperWatcher {
             List<String> children = zk.getChildren(servicePath, watchedEvent -> {
                 if (watchedEvent.getType() == Watcher.Event.EventType.NodeChildrenChanged) {
                     LOGGER.info("{}子节点发生变化，重新获取信息", watchedEvent.getPath());
-                    getServiceInfoByServiceName(serviceName);
+//                    getServiceInfoByServiceName(serviceName);
+                      getServersList();
                 }
             });
-
             LOGGER.info("获取{}的子节点成功", servicePath);
+            //判断子节点是否为空
+            /*if (children.size() == 0) {
+                ServiceCache.getServices().remove(serviceName);
+                LOGGER.info("{} 的子节点为空，移除服务，现在服务size为 {}", servicePath,ServiceCache.getServices().size());
+            }*/
+
+
             WatcherUtils.resetServiceInfoByName(serviceName, servicePath, children, caches);
 
             ServiceCache.loadServicesMetadata(serviceName, caches.get(serviceName));

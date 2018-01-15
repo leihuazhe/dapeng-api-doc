@@ -6,10 +6,10 @@ import com.github.dapeng.core.SoaException;
 import com.github.dapeng.core.metadata.*;
 import com.github.dapeng.metadata.*;
 import com.github.dapeng.registry.ServiceInfo;
-import com.github.dapeng.util.SoaSystemEnvProperties;
 import com.google.common.collect.TreeMultimap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import javax.xml.bind.JAXB;
 import java.io.StringReader;
@@ -66,14 +66,16 @@ public class ServiceCache {
                 }.getServiceMetadata();
                 if (metadata != null) {
                     try (StringReader reader = new StringReader(metadata)) {
-                        Service s = JAXB.unmarshal(reader, Service.class);
-                        String serviceKey = getKey(s);
-                        String fullNameKey = getFullNameKey(s);
+                        Service serviceData = JAXB.unmarshal(reader, Service.class);
+                        String serviceKey = getKey(serviceData);
+                        String fullNameKey = getFullNameKey(serviceData);
 
-                        services.put(serviceKey, s);
+                        services.put(serviceKey, serviceData);
+
                         LOGGER.info("----------------- service size :  "+services.size());
-                        fullNameService.put(fullNameKey, s);
-                        loadServiceUrl(s);
+
+                        fullNameService.put(fullNameKey, serviceData);
+                        loadServiceUrl(serviceData);
 
                     } catch (Exception e) {
                         LOGGER.error("{}:{} metadata解析出错", serviceName, version);
