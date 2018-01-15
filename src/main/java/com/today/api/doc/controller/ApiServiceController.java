@@ -27,9 +27,6 @@ import java.util.Map;
 @RequestMapping(value = "api")
 public class ApiServiceController {
 
-   /* @Autowired
-    private ServiceCache serviceCache;*/
-
     @ModelAttribute
     public void populateModel(Model model) {
         model.addAttribute("tagName", "api");
@@ -122,18 +119,15 @@ public class ApiServiceController {
     @RequestMapping(value = "findService/{serviceName}/{version}", method = RequestMethod.GET)
     @ResponseBody
     public Service findService(@PathVariable String serviceName, @PathVariable String version) {
-        System.out.println("serviceName: "+serviceName +",version: "+version);
-        Service service =  ServiceCache.getService(serviceName, version);
-        System.out.println(service);
-        return service;
+        return ServiceCache.getService(serviceName, version);
     }
 
     @RequestMapping(value = "findServiceAfterRefresh/{serviceName}/{version}/{refresh}", method = RequestMethod.GET)
     @ResponseBody
     public Service findService(@PathVariable String serviceName, @PathVariable String version, @PathVariable boolean refresh) {
-//        if (refresh) {
-//            serviceCache.reloadServices();
-//        }
+        /*if (refresh) {
+            serviceCache.reloadServices();
+        }*/
         return ServiceCache.getService(serviceName, version);
     }
 }

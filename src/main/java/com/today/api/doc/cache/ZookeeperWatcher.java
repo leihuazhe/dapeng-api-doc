@@ -90,7 +90,7 @@ public class ZookeeperWatcher {
         String servicePath = serviceRoute + "/" + serviceName;
         try {
 
-            if (zk == null){
+            if (zk == null) {
                 init();
             }
 
@@ -98,7 +98,7 @@ public class ZookeeperWatcher {
                 if (watchedEvent.getType() == Watcher.Event.EventType.NodeChildrenChanged) {
                     LOGGER.info("{}子节点发生变化，重新获取信息", watchedEvent.getPath());
 //                    getServiceInfoByServiceName(serviceName);
-                      getServersList();
+                    getServersList();
                 }
             });
             LOGGER.info("获取{}的子节点成功", servicePath);
@@ -132,8 +132,8 @@ public class ZookeeperWatcher {
                     destroy();
                     init();
                 } else if (e.getState() == Watcher.Event.KeeperState.SyncConnected) {
-                    LOGGER.info("Zookeeper Watcher 已连接 zookeeper Server,Zookeeper host: {}",zookeeperHost);
-                }else if (e.getState() == Watcher.Event.KeeperState.Disconnected) {
+                    LOGGER.info("Zookeeper Watcher 已连接 zookeeper Server,Zookeeper host: {}", zookeeperHost);
+                } else if (e.getState() == Watcher.Event.KeeperState.Disconnected) {
                     LOGGER.info("Zookeeper Watcher 连接不上了");
                 }
             });

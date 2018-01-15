@@ -3,9 +3,9 @@ package com.today.api.doc.controller;
 import com.github.dapeng.core.InvocationContext;
 import com.github.dapeng.core.InvocationContextImpl;
 import com.github.dapeng.core.metadata.Service;
-import com.github.dapeng.json.JsonPost;
-import com.github.dapeng.util.SoaSystemEnvProperties;
+import com.github.dapeng.registry.ServiceInfo;
 import com.today.api.doc.cache.ServiceCache;
+import com.today.api.doc.utils.JsonPostUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -36,11 +36,6 @@ public class TestController {
         model.addAttribute("tagName", "test");
     }
 
-   /* @Autowired
-    private ServiceCache serviceCache;*/
-
-//    private JsonPost jsonPost = new JsonPost(SoaSystemEnvProperties.SOA_CONTAINER_IP, SoaSystemEnvProperties.SOA_CONTAINER_PORT, true);
-    private JsonPost jsonPost = new JsonPost("192.168.1.198",9095, true);
 
     @RequestMapping(method = RequestMethod.POST)
     @ResponseBody
@@ -53,6 +48,9 @@ public class TestController {
 
         Service service = ServiceCache.getService(serviceName, versionName);
 
+        ServiceInfo info = ServiceCache.getServerInfoMap(serviceName, versionName);
+
+
         InvocationContext invocationCtx = InvocationContextImpl.Factory.getCurrentInstance();
         invocationCtx.setServiceName(serviceName);
         invocationCtx.setVersionName(versionName);
@@ -62,9 +60,7 @@ public class TestController {
         fillInvocationCtx(invocationCtx, req);
 
         try {
-            String s =  jsonPost.callServiceMethod(invocationCtx, jsonParameter, service);
-            System.out.println(s);
-            return  s;
+            return JsonPostUtils.callServiceMethod(invocationCtx, jsonParameter, service, info.getHost(), info.getPort(), true);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }

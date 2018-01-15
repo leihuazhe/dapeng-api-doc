@@ -102,8 +102,6 @@ public class CuratorWatcher {
         PathChildrenCache cache = new PathChildrenCache(cf, PARENT_PATH, true);
         //5 在初始化的时候就进行缓存监听
 
-//        cache.start(PathChildrenCache.StartMode.POST_INITIALIZED_EVENT);
-
         cache.start(PathChildrenCache.StartMode.BUILD_INITIAL_CACHE);
         cache.getListenable().addListener(new PathChildrenCacheListener() {
             /**

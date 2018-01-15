@@ -9,7 +9,6 @@ import com.github.dapeng.registry.ServiceInfo;
 import com.google.common.collect.TreeMultimap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import javax.xml.bind.JAXB;
 import java.io.StringReader;
@@ -31,6 +30,8 @@ public class ServiceCache {
 
     private static Map<String, Service> services = new TreeMap<>();
 
+    private static Map<String, ServiceInfo> serverInfoMap = new TreeMap<>();
+
     private static Map<String, Service> fullNameService = new TreeMap<>();
 
     public static TreeMultimap<String, String> urlMappings = TreeMultimap.create();
@@ -39,6 +40,7 @@ public class ServiceCache {
         services.clear();
         fullNameService.clear();
         urlMappings.clear();
+        serverInfoMap.clear();
     }
 
     public static void loadServicesMetadata(String serviceName, List<ServiceInfo> infos) {
@@ -52,14 +54,12 @@ public class ServiceCache {
             String version = info.getVersionName();
             String metadata = "";
             try {
-//                soa.container.ip          soa.container.port
-
-                metadata = new MetadataClient(serviceName, version){
+                metadata = new MetadataClient(serviceName, version) {
                     @Override
                     public String getServiceMetadata() throws Exception {
                         getServiceMetadata_result result = new SoaConnectionImpl(info.getHost(), info.getPort())
-                                .send(serviceName,version,"getServiceMetadata", new getServiceMetadata_args(),
-                                        new GetServiceMetadata_argsSerializer(),new GetServiceMetadata_resultSerializer());
+                                .send(serviceName, version, "getServiceMetadata", new getServiceMetadata_args(),
+                                        new GetServiceMetadata_argsSerializer(), new GetServiceMetadata_resultSerializer());
 
                         return result.getSuccess();
                     }
@@ -72,7 +72,9 @@ public class ServiceCache {
 
                         services.put(serviceKey, serviceData);
 
-                        LOGGER.info("----------------- service size :  "+services.size());
+                        serverInfoMap.put(fullNameKey, info);
+
+                        LOGGER.info("----------------- service size :  " + services.size());
 
                         fullNameService.put(fullNameKey, serviceData);
                         loadServiceUrl(serviceData);
@@ -94,6 +96,7 @@ public class ServiceCache {
 
     /**
      * 将service和service中的方法、结构体、枚举和字段名分别设置对应的url，以方便搜索
+     *
      * @param service
      */
     private static void loadServiceUrl(Service service) {
@@ -127,12 +130,9 @@ public class ServiceCache {
     }
 
 
-
-
     public void destory() {
         services.clear();
     }
-
 
 
     public static Service getService(String name, String version) {
@@ -160,4 +160,7 @@ public class ServiceCache {
         return services;
     }
 
+    public static ServiceInfo getServerInfoMap(String name, String version) {
+        return serverInfoMap.get(getKey(name, version));
+    }
 }
