@@ -60,7 +60,7 @@ public class TestController {
         fillInvocationCtx(invocationCtx, req);
 
         try {
-            return JsonPostUtils.callServiceMethod(invocationCtx, jsonParameter, service, info.getHost(), info.getPort(), true);
+            return JsonPostUtils.callServiceMethod(invocationCtx, jsonParameter, service, info.host, info.port, true);
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
         }

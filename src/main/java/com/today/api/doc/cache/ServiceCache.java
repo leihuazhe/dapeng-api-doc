@@ -47,17 +47,17 @@ public class ServiceCache {
 
         Map<String, ServiceInfo> diffVersionServices = new HashMap<>();
         for (ServiceInfo info : infos) {
-            diffVersionServices.put(info.getVersionName(), info);
+            diffVersionServices.put(info.versionName, info);
         }
 
         for (ServiceInfo info : diffVersionServices.values()) {
-            String version = info.getVersionName();
+            String version = info.versionName;
             String metadata = "";
             try {
                 metadata = new MetadataClient(serviceName, version) {
                     @Override
                     public String getServiceMetadata() throws Exception {
-                        getServiceMetadata_result result = new SoaConnectionImpl(info.getHost(), info.getPort())
+                        getServiceMetadata_result result = new SoaConnectionImpl(info.host, info.port)
                                 .send(serviceName, version, "getServiceMetadata", new getServiceMetadata_args(),
                                         new GetServiceMetadata_argsSerializer(), new GetServiceMetadata_resultSerializer());
 
